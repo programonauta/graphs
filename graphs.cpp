@@ -9,11 +9,12 @@
 //
 void Graph::addNode()
 {
-  nodeGraph n;
-  vector<int> adjM;
-  n.cLabel = -1; // label Communit -1 as default
-  nodes.push_back(n);
-  adj.resize(nodes.size());
+    nodeGraph n;
+    vector<int> adjM;
+    n.clusterIndex = -1; // set Cluster Index -1 as default
+    nodes.push_back(n);
+    adj.resize(nodes.size());
+    edgeWeight.resize(nodes.size());
 }
 
 Graph::Graph()
@@ -23,73 +24,93 @@ Graph::Graph()
 
 Graph::Graph(int qtyNodes)
 {
-  for (int i = 0; i < qtyNodes; i++)
-    addNode();
+    for (int i = 0; i < qtyNodes; i++)
+        addNode();
 
-  adj.resize(qtyNodes);
+    adj.resize(qtyNodes);
+    edgeWeight.resize(qtyNodes);
 }
 
 //
 // Insert a new edge in the graph
 // return false if any of nodes doesn't exist
 //
-bool Graph::addEdge(int n, int m)
+bool Graph::addEdge(unsigned n, unsigned m, double weight)
 {
-  if (n < 0 || n >= nodes.size() || m < 0 || m >= nodes.size())
-    return false;
-  adj[n].push_back(m);
-  adj[m].push_back(n);
-  return true;
+    if (n >= nodes.size() || m >= nodes.size())
+        return false;
+    adj[n].push_back(m);
+    edgeWeight[n].push_back(weight);
+    adj[m].push_back(n);
+    edgeWeight[m].push_back(weight);
+    return true;
 }
 
 int Graph::getNumberNodes()
 {
-  return nodes.size();
+    return nodes.size();
 }
 
-int Graph::getClassLabel(int n)
+vector<unsigned> Graph::getAdjacents(unsigned n)
 {
-  if (n < 0 || n >= nodes.size())
-    return -2;
-
-  return nodes[n].cLabel;
+    return adj[n];
 }
 
-void Graph::DFSUtil(int n, int cLabel, bool visited[])
+vector<int> Graph::getClusters()
 {
-  // Mark the current node as visited and print it
-  visited[n] = true;
-  nodes[n].cLabel = cLabel;
-
-  // Recur for all the vertices
-  // adjacent to this vertex
-  for(int i = 0; i < adj[n].size(); ++i)
-  {
-    int m = adj[n][i];
-    if(!visited[m])
-      DFSUtil(m, cLabel, visited);
-  }
+    return clusters;
 }
+
+int Graph::getClusterIndex(unsigned n)
+{
+    if (n >= nodes.size())
+        return -2;
+
+    return nodes[n].clusterIndex;
+}
+
+void Graph::DFSUtil(unsigned n, unsigned cIndex, bool visited[])
+{
+    // Mark the current node as visited and print it
+    visited[n] = true;
+    nodes[n].clusterIndex = cIndex;
+    clusters[cIndex]++;
+
+    // Recur for all the vertices
+    // adjacent to this vertex
+    for(unsigned i = 0; i < adj[n].size(); ++i)
+    {
+        unsigned m = adj[n][i];
+        if(!visited[m])
+            DFSUtil(m, cIndex, visited);
+    }
+}
+
+
+//
+// Mark with different labels connected components
+//
+// if maxWeight == true, only connected through max weights
 
 void Graph::connectedComponents()
 {
-  // Mark all the vertices as not visited
-  bool *visited = new bool[nodes.size()];
-  for(int n = 0; n < nodes.size(); n++)
-    visited[n] = false;
+    // Mark all the vertices as not visited
+    bool *visited = new bool[nodes.size()];
+    for(unsigned n = 0; n < nodes.size(); n++)
+        visited[n] = false;
 
-  int classLabel = 0;
-  for (int n=0; n<nodes.size(); n++)
-  {
-    if (visited[n] == false)
+    int clusterIndex = -1;
+    for (unsigned n=0; n<nodes.size(); n++)
     {
-      // print all reachable vertices
-      // from v
-      DFSUtil(n, classLabel, visited);
-
-      classLabel++;
+        if (!visited[n])
+        {
+            // print all reachable vertices
+            // from v
+            clusterIndex++;
+            clusters.push_back(0);
+            DFSUtil(n, clusterIndex, visited);
+        }
     }
-  }
 }
 
 
