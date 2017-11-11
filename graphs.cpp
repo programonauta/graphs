@@ -1,25 +1,29 @@
-// Graph class represents a undirected graph
-// using adjacency list representation
-
-// Method to label connected components in an
-// undirected graph
+/*
+ *  Graph class represents a undirected graph
+ *  using adjacency list representation
+ *
+ *  Method to label connected components in an
+ *  undirected graph
+ */
 #include "graphs.h"
 
-// Insert a new node in the Graph
-//
+/*
+ *  Insert a new node in the Graph
+ *
+ */
 void Graph::addNode()
 {
     nodeGraph n;
-    vector<int> adjM;
-    n.clusterIndex = -1; // set Cluster Index -1 as default
+    n.idxNode = -1; // set node Index -1 as default
+    n.clusterLabel = -1;
     nodes.push_back(n);
     adj.resize(nodes.size());
     edgeWeight.resize(nodes.size());
 }
 
+// Constructor
 Graph::Graph()
 {
-//  adj = new list<int>;
 }
 
 Graph::Graph(int qtyNodes)
@@ -56,7 +60,13 @@ vector<unsigned> Graph::getAdjacents(unsigned n)
     return adj[n];
 }
 
-vector<int> Graph::getClusters()
+// Return the quantity of adjacents nodes
+unsigned Graph::getQtyAdjacents(unsigned n)
+{
+    return adj[n].size();
+}
+
+vector<vector <int> > Graph::getClusters()
 {
     return clusters;
 }
@@ -66,15 +76,17 @@ int Graph::getClusterIndex(unsigned n)
     if (n >= nodes.size())
         return -2;
 
-    return nodes[n].clusterIndex;
+    return nodes[n].idxNode;
 }
 
 void Graph::DFSUtil(unsigned n, unsigned cIndex, bool visited[])
 {
     // Mark the current node as visited and print it
     visited[n] = true;
-    nodes[n].clusterIndex = cIndex;
-    clusters[cIndex]++;
+    nodes[n].idxNode = cIndex;
+    nodes[n].clusterLabel = cIndex;
+    clusters[cIndex][1]++;      // Increment the number of nodes on cluster cIndex
+    clusters[cIndex][0]=cIndex; // Update the cluster label
 
     // Recur for all the vertices
     // adjacent to this vertex
@@ -92,6 +104,11 @@ void Graph::DFSUtil(unsigned n, unsigned cIndex, bool visited[])
 //
 // if maxWeight == true, only connected through max weights
 
+// connected Components give labels for clusters and
+// for each node store its cluster on g.[<idxNode>].idxNode
+// Also, update an internal vector of graph that store the numbers of nodes each cluster has
+// This vector could be gathered by getCluster method
+
 void Graph::connectedComponents()
 {
     // Mark all the vertices as not visited
@@ -107,7 +124,10 @@ void Graph::connectedComponents()
             // print all reachable vertices
             // from v
             clusterIndex++;
-            clusters.push_back(0);
+            vector<int> a(2);
+            a[0] = -1;
+            a[1] = 0;
+            clusters.push_back(a);
             DFSUtil(n, clusterIndex, visited);
         }
     }

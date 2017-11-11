@@ -1,13 +1,14 @@
 #ifndef GRAPH_H
 #define GRAPH_H
+
+//#include <list>
 #include <vector>
 
 using namespace std;
 
 typedef struct nGraph
 {
-    int idxNode;
-    int clusterLabel;
+    int clusterIndex;
 } nodeGraph;
 
 class Graph
@@ -15,12 +16,9 @@ class Graph
 private:
 
     vector<nodeGraph> nodes;
-    vector<vector <int> > clusters;   // Clusters Vector.
-                                      // Each position has a 2 position array:
-                                      // [0] quantity of nodes each cluster has
-                                      // [1] label of cluster
+    vector<unsigned> clusters;   // Clusters Vector. Each position indicates quantity of nodes each cluster has
 
-    // 2 dimensional rray containing adjacency lists [idxNodeFrom][idxNodeTo]
+    // Pointer to an array containing adjacency lists
     vector<vector <unsigned> > adj;
     // pointer to an array containing the weight of edges
     vector<vector <double> > edgeWeight;
@@ -36,7 +34,7 @@ public:
     void connectedComponents();
     vector<unsigned> getAdjacents(unsigned n);
     unsigned getQtyAdjacents(unsigned n);
-    vector<vector <int> > getClusters();
+    vector<unsigned> getClusters();
 
     int getClusterIndex(unsigned n);
     int getNumberNodes();
